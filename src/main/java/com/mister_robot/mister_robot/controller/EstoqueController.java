@@ -11,8 +11,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
+import com.dto.request.JogoRequestDTO;
 import com.mister_robot.mister_robot.JogoService;
 import com.mister_robot.mister_robot.entity.Jogo;
 
@@ -49,13 +52,38 @@ public class EstoqueController {
     }
 
     @PostMapping
-    public Jogo criar(@RequestBody Jogo jogo) {
-        return jogoService.save(jogo);
+    public ResponseEntity<Object> criar(@RequestBody JogoRequestDTO dto) {
+        try {
+            Jogo jogoCriado = jogoService.save(dto);
+            return ResponseEntity.status(201).body(jogoCriado);
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(500).body("Não foi possível criar o jogo");
+        }
     }
 
     @PutMapping("/{id}")
-    public Jogo atualizar(@PathVariable Long id, @RequestBody Jogo jogo) {
-        return jogoService.update(id, jogo);
+    public ResponseEntity<Object> atualizar(@PathVariable Long id, @RequestBody JogoRequestDTO dto) {
+        if (jogoService.findById(id).isEmpty()) {
+            return ResponseEntity.status(404)
+                    .body("Jogo não encontrado com o id: " + id);
+        }
+
+        try {
+            Jogo jogoAtualizado = jogoService.update(id, dto);
+            return ResponseEntity.ok(jogoAtualizado);
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(500).body("Não foi possível atualizar o jogo");
+        }
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Object> tratarJsonInvalido(HttpMessageNotReadableException exception) {
+        return ResponseEntity.badRequest()
+                .body("JSON inválido: verifique os tipos dos campos enviados");
     }
 
     @DeleteMapping("/{id}")

@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.dto.request.JogoRequestDTO;
 import com.mister_robot.mister_robot.entity.Jogo;
 import com.mister_robot.mister_robot.repository.JogoRepository;
 
@@ -49,21 +50,31 @@ public class JogoService {
         return repository.findByQuantidadeEstoqueGreaterThan(0);
     }
 
-    public Jogo save(Jogo jogo) {
-        validate(jogo);
+    public Jogo save(JogoRequestDTO dto) {
+        validate(dto);
+
+        Jogo jogo = new Jogo();
+        jogo.setTitulo(dto.titulo());
+        jogo.setDescricao(dto.descricao());
+        jogo.setGenero(dto.genero());
+        jogo.setDesenvolvedora(dto.desenvolvedora());
+        jogo.setIdadeMinima(dto.idadeMinima());
+        jogo.setQuantidadeEstoque(dto.quantidadeEstoque());
+        jogo.setPreco(dto.preco());
+
         return repository.save(jogo);
     }
 
-    public Jogo update(Long id, Jogo jogo) {
+    public Jogo update(Long id, JogoRequestDTO dto) {
         Jogo atual = findByIdOrThrow(id);
-        validate(jogo);
-        atual.setTitulo(jogo.getTitulo());
-        atual.setDescricao(jogo.getDescricao());
-        atual.setGenero(jogo.getGenero());
-        atual.setDesenvolvedora(jogo.getDesenvolvedora());
-        atual.setIdadeMinima(jogo.getIdadeMinima());
-        atual.setQuantidadeEstoque(jogo.getQuantidadeEstoque());
-        atual.setPreco(jogo.getPreco());
+        validate(dto);
+        atual.setTitulo(dto.titulo());
+        atual.setDescricao(dto.descricao());
+        atual.setGenero(dto.genero());
+        atual.setDesenvolvedora(dto.desenvolvedora());
+        atual.setIdadeMinima(dto.idadeMinima());
+        atual.setQuantidadeEstoque(dto.quantidadeEstoque());
+        atual.setPreco(dto.preco());
         return repository.save(atual);
     }
 
@@ -107,20 +118,20 @@ public class JogoService {
                 .orElseThrow(() -> new IllegalArgumentException("Jogo não encontrado: " + id));
     }
 
-    private void validate(Jogo jogo) {
-        if (jogo == null) {
-            throw new IllegalArgumentException("Jogo é obrigatório");
+    private void validate(JogoRequestDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Dados do jogo são obrigatórios");
         }
-        if (jogo.getTitulo() == null || jogo.getTitulo().isBlank()) {
+        if (dto.titulo() == null || dto.titulo().isBlank()) {
             throw new IllegalArgumentException("Título é obrigatório");
         }
-        if (jogo.getPreco() < 0) {
+        if (dto.preco() < 0) {
             throw new IllegalArgumentException("Preço não pode ser negativo");
         }
-        if (jogo.getQuantidadeEstoque() < 0) {
+        if (dto.quantidadeEstoque() < 0) {
             throw new IllegalArgumentException("Quantidade em estoque não pode ser negativa");
         }
-        if (jogo.getIdadeMinima() < 0) {
+        if (dto.idadeMinima() < 0) {
             throw new IllegalArgumentException("Idade mínima não pode ser negativa");
         }
     }

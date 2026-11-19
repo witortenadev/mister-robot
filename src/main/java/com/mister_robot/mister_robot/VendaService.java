@@ -1,15 +1,20 @@
 package com.mister_robot.mister_robot;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.dto.request.VendaItemRequestDTO;
+import com.dto.request.VendaRequestDTO;
 import com.mister_robot.mister_robot.entity.FormaPagamento;
+import com.mister_robot.mister_robot.entity.ItemVenda;
+import com.mister_robot.mister_robot.entity.Jogo;
 import com.mister_robot.mister_robot.entity.StatusVenda;
 import com.mister_robot.mister_robot.entity.Venda;
+import com.mister_robot.mister_robot.repository.JogoRepository;
 import com.mister_robot.mister_robot.repository.VendaRepository;
 
 @Service
@@ -17,9 +22,11 @@ import com.mister_robot.mister_robot.repository.VendaRepository;
 public class VendaService {
 
     private final VendaRepository repository;
+    private final JogoRepository jogoRepository;
 
-    public VendaService(VendaRepository repository) {
+    public VendaService(VendaRepository repository, JogoRepository jogoRepository) {
         this.repository = repository;
+        this.jogoRepository = jogoRepository;
     }
 
     @Transactional(readOnly = true)
@@ -33,12 +40,12 @@ public class VendaService {
     }
 
     @Transactional(readOnly = true)
-    public List<Venda> findByStatus(char status) {
+    public List<Venda> findByStatus(StatusVenda status) {
         return repository.findByStatus(status);
     }
 
     @Transactional(readOnly = true)
-    public List<Venda> findByPeriodo(LocalDate inicio, LocalDate fim) {
+    public List<Venda> findByPeriodo(LocalDateTime inicio, LocalDateTime fim) {
         if (inicio == null || fim == null) {
             throw new IllegalArgumentException("Datas de início e fim são obrigatórias");
         }
@@ -56,18 +63,56 @@ public class VendaService {
         return repository.findByFormaPagamento(formaPagamento);
     }
 
-    public Venda save(Venda venda) {
-        validate(venda);
+    public Venda save(VendaRequestDTO dto) {
+        validate(dto);
+
+        Venda venda = new Venda();
+        venda.setData(LocalDateTime.now());
+        venda.setClienteNome(dto.clienteNome().trim());
+        venda.setFormaPagamento(dto.formaPagamento());
+        venda.setStatus(StatusVenda.FINALIZADA);
+
+        double valorTotal = 0;
+        for (VendaItemRequestDTO itemDto : dto.itens()) {
+            Jogo jogo = jogoRepository.findById(itemDto.jogoId())
+                    .orElseThrow(() -> new IllegalArgumentException("Jogo não encontrado: " + itemDto.jogoId()));
+
+            if (itemDto.quantidade() <= 0) {
+                throw new IllegalArgumentException("Quantidade deve ser maior que zero");
+            }
+            if (jogo.getQuantidadeEstoque() < itemDto.quantidade()) {
+                throw new IllegalStateException("Estoque insuficiente para o jogo: " + jogo.getTitulo());
+            }
+
+            jogo.setQuantidadeEstoque(jogo.getQuantidadeEstoque() - itemDto.quantidade());
+            jogoRepository.save(jogo);
+
+            ItemVenda item = new ItemVenda();
+            item.setVenda(venda);
+            item.setJogo(jogo);
+            item.setQuantidade(itemDto.quantidade());
+            item.setPrecoUnitario(jogo.getPreco());
+            venda.getItens().add(item);
+            valorTotal += jogo.getPreco() * itemDto.quantidade();
+        }
+
+        venda.setValorTotal(valorTotal);
         return repository.save(venda);
     }
 
-    public Venda update(Long id, Venda venda) {
+    public Venda update(Long id, VendaRequestDTO dto) {
         Venda atual = findByIdOrThrow(id);
-        validate(venda);
-        atual.setData(venda.getData());
-        atual.setValorTotal(venda.getValorTotal());
-        atual.setStatus(venda.getStatus());
-        atual.setFormaPagamento(venda.getFormaPagamento());
+        if (dto == null) {
+            throw new IllegalArgumentException("Dados da venda são obrigatórios");
+        }
+        if (dto.clienteNome() == null || dto.clienteNome().isBlank()) {
+            throw new IllegalArgumentException("Nome do cliente é obrigatório");
+        }
+        if (dto.formaPagamento() == null) {
+            throw new IllegalArgumentException("Forma de pagamento é obrigatória");
+        }
+        atual.setClienteNome(dto.clienteNome().trim());
+        atual.setFormaPagamento(dto.formaPagamento());
         return repository.save(atual);
     }
 
@@ -96,18 +141,18 @@ public class VendaService {
                 .orElseThrow(() -> new IllegalArgumentException("Venda não encontrada: " + id));
     }
 
-    private void validate(Venda venda) {
-        if (venda == null) {
-            throw new IllegalArgumentException("Venda é obrigatória");
+    private void validate(VendaRequestDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Dados da venda são obrigatórios");
         }
-        if (venda.getData() == null) {
-            throw new IllegalArgumentException("Data da venda é obrigatória");
+        if (dto.clienteNome() == null || dto.clienteNome().isBlank()) {
+            throw new IllegalArgumentException("Nome do cliente é obrigatório");
         }
-        if (venda.getValorTotal() < 0) {
-            throw new IllegalArgumentException("Valor total não pode ser negativo");
-        }
-        if (venda.getFormaPagamento() == null) {
+        if (dto.formaPagamento() == null) {
             throw new IllegalArgumentException("Forma de pagamento é obrigatória");
+        }
+        if (dto.itens() == null || dto.itens().isEmpty()) {
+            throw new IllegalArgumentException("A venda deve conter pelo menos um jogo");
         }
     }
 }

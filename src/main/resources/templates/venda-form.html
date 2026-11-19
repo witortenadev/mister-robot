@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Venda</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="min-h-screen bg-neutral-950 text-neutral-100">
+    <nav class="border-b border-neutral-800 px-8 py-6">
+      <div class="mx-auto flex max-w-3xl justify-between">
+        <a href="/" class="font-bold text-green-500">Mister Robot</a
+        ><a href="/pages/vendas">Vendas</a>
+      </div>
+    </nav>
+    <main class="mx-auto max-w-3xl px-8 py-12">
+      <h1
+        class="mb-8 text-3xl font-bold"
+        th:text="${vendaId == null} ? 'Nova venda' : 'Editar venda'"
+      >
+        Venda
+      </h1>
+      <p id="mensagem" class="mb-8 hidden border px-8 py-4"></p>
+      <form
+        id="vendaForm"
+        class="grid gap-8 border border-neutral-800 bg-neutral-900 p-8"
+      >
+        <div>
+          <label
+            for="clienteNome"
+            class="mb-8 block text-sm font-medium text-neutral-300"
+            >Nome do cliente</label
+          ><input
+            id="clienteNome"
+            name="clienteNome"
+            required
+            class="w-full border border-neutral-700 bg-neutral-950 px-8 py-4"
+            th:value="${venda != null} ? ${venda.clienteNome} : ''"
+          />
+        </div>
+        <div>
+          <label
+            for="formaPagamento"
+            class="mb-8 block text-sm font-medium text-neutral-300"
+            >Forma de pagamento</label
+          ><select
+            id="formaPagamento"
+            name="formaPagamento"
+            required
+            class="w-full border border-neutral-700 bg-neutral-950 px-8 py-4"
+          >
+            <option
+              th:value="PIX"
+              th:selected="${venda != null and venda.formaPagamento.name() == 'PIX'}"
+            >
+              PIX
+            </option>
+            <option
+              th:value="CARTAO"
+              th:selected="${venda != null and venda.formaPagamento.name() == 'CARTAO'}"
+            >
+              Cartão
+            </option>
+            <option
+              th:value="DINHEIRO"
+              th:selected="${venda != null and venda.formaPagamento.name() == 'DINHEIRO'}"
+            >
+              Dinheiro
+            </option>
+          </select>
+        </div>
+        <div id="itens" th:if="${vendaId == null}" class="grid gap-8">
+          <div class="grid gap-8 border border-neutral-800 p-8 md:grid-cols-2">
+            <div>
+              <label class="mb-8 block text-sm font-medium text-neutral-300"
+                >Jogo</label
+              ><select
+                name="jogoId"
+                required
+                class="w-full border border-neutral-700 bg-neutral-950 px-8 py-4"
+              >
+                <option value="">Selecione um jogo</option>
+                <option
+                  th:each="jogo : ${jogos}"
+                  th:value="${jogo.id}"
+                  th:text="${jogo.titulo} + ' - R$ ' + ${jogo.preco}"
+                ></option>
+              </select>
+            </div>
+            <div>
+              <label class="mb-8 block text-sm font-medium text-neutral-300"
+                >Quantidade</label
+              ><input
+                name="quantidade"
+                type="number"
+                min="1"
+                value="1"
+                required
+                class="w-full border border-neutral-700 bg-neutral-950 px-8 py-4"
+              />
+            </div>
+          </div>
+        </div>
+        <button
+          type="submit"
+          class="bg-green-500 px-8 py-4 font-semibold text-neutral-950"
+        >
+          Salvar venda
+        </button>
+      </form>
+    </main>
+    <script th:inline="javascript">
+      const vendaId = /*[[${vendaId}]]*/ null;
+      const form = document.getElementById("vendaForm");
+      const mensagem = document.getElementById("mensagem");
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const data = {
+          clienteNome: form.clienteNome.value,
+          formaPagamento: form.formaPagamento.value,
+          itens: [],
+        };
+        if (!vendaId)
+          document
+            .querySelectorAll("#itens > div")
+            .forEach((item) =>
+              data.itens.push({
+                jogoId: Number(item.querySelector("[name=jogoId]").value),
+                quantidade: Number(
+                  item.querySelector("[name=quantidade]").value,
+                ),
+              }),
+            );
+        try {
+          const response = await fetch(
+            vendaId ? `/vendas/${vendaId}` : "/vendas",
+            {
+              method: vendaId ? "PUT" : "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            },
+          );
+          const body = await response.text();
+          if (!response.ok) throw new Error(body);
+          window.location.href = "/pages/vendas";
+        } catch (error) {
+          mensagem.textContent =
+            error.message || "Não foi possível salvar a venda";
+          mensagem.className =
+            "mb-8 border border-red-500 bg-red-500/10 px-8 py-4 text-red-300";
+        }
+      });
+    </script>
+  </body>
+</html>

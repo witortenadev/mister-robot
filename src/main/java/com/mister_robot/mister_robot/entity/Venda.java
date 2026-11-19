@@ -7,9 +7,10 @@ import java.util.List;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter @Setter @AllArgsConstructor @Entity @Table(name = "vendas")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Entity @Table(name = "vendas")
 public class Venda {
 
     @Id 
@@ -18,6 +19,9 @@ public class Venda {
 
     @Column(nullable = false)
     private LocalDateTime data;
+
+    @Column(nullable = false, length = 150)
+    private String clienteNome;
 
     @Column(nullable = false)
     private double valorTotal;

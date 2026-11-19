@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vendas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="min-h-screen bg-neutral-950 text-neutral-100">
+    <nav class="border-b border-neutral-800 px-8 py-6">
+      <div class="mx-auto flex max-w-6xl justify-between">
+        <a href="/" class="font-bold text-green-500">Mister Robot</a>
+        <div class="space-x-6 text-sm">
+          <a href="/pages/jogos">Estoque</a><a href="/pages/vendas">Vendas</a>
+        </div>
+      </div>
+    </nav>
+    <main class="mx-auto max-w-6xl px-8 py-12">
+      <div class="mb-8 flex items-center justify-between">
+        <h1 class="text-3xl font-bold">Vendas</h1>
+        <a
+          href="/pages/vendas/nova"
+          class="bg-green-500 px-8 py-4 font-semibold text-neutral-950"
+          >Nova venda</a
+        >
+      </div>
+      <div class="overflow-x-auto border border-neutral-800">
+        <table class="w-full text-left">
+          <thead class="bg-neutral-900 text-neutral-400">
+            <tr>
+              <th class="p-8">Cliente</th>
+              <th class="p-8">Data</th>
+              <th class="p-8">Pagamento</th>
+              <th class="p-8">Status</th>
+              <th class="p-8">Total</th>
+              <th class="p-8">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="venda : ${vendas}" class="border-t border-neutral-800">
+              <td class="p-8 font-medium" th:text="${venda.clienteNome}"></td>
+              <td class="p-8" th:text="${venda.data}"></td>
+              <td class="p-8" th:text="${venda.formaPagamento}"></td>
+              <td class="p-8" th:text="${venda.status}"></td>
+              <td
+                class="p-8 text-green-500"
+                th:text="'R$ ' + ${venda.valorTotal}"
+              ></td>
+              <td class="p-8">
+                <a
+                  th:href="@{/pages/vendas/{id}/editar(id=${venda.id})}"
+                  class="border border-green-500 px-4 py-2 text-green-500 hover:bg-green-500 hover:text-neutral-950"
+                  >Editar</a
+                >
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </body>
+</html>
