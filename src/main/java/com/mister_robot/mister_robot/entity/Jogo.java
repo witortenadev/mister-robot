@@ -1,19 +1,37 @@
 package com.mister_robot.mister_robot.entity;
 
+import java.math.BigDecimal;
+
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter @AllArgsConstructor 
+@Getter @Setter @AllArgsConstructor @Entity @Table(name = "jogos")
 public class Jogo {
 
-    long id;
-    String titulo;
-    String descricao;
-    String genero;
-    String desenvolvedora;
-    int idadeMinima; 
-    int quantidadeEstoque;
-    double preco;
+@Id 
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+@Column(nullable = false, length = 150)
+    private String titulo;
+
+@Column(length = 500)
+    private String descricao;
+
+@Column(length = 150)
+    private String genero;
+
+@Column(length = 150)
+    private String desenvolvedora;
+
+    private int idadeMinima; 
+
+@Column(nullable = false)
+    private int quantidadeEstoque;
+
+@Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal preco;
    
 }
