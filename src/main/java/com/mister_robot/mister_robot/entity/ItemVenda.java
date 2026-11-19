@@ -1,7 +1,5 @@
 package com.mister_robot.mister_robot.entity;
 
-import java.math.BigDecimal;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,6 +24,6 @@ public class ItemVenda {
     @Column(nullable = false)
     private int quantidade;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal precoUnitario;
+    @Column(nullable = false)
+    private double precoUnitario;
 }

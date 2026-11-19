@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mister_robot.mister_robot.entity.FormaPagamento;
+import com.mister_robot.mister_robot.entity.StatusVenda;
 import com.mister_robot.mister_robot.entity.Venda;
 import com.mister_robot.mister_robot.repository.VendaRepository;
 
@@ -57,7 +58,6 @@ public class VendaService {
 
     public Venda save(Venda venda) {
         validate(venda);
-        venda.setId(null);
         return repository.save(venda);
     }
 
@@ -71,7 +71,7 @@ public class VendaService {
         return repository.save(atual);
     }
 
-    public Venda alterarStatus(Long id, char status) {
+    public Venda alterarStatus(Long id, StatusVenda status) {
         Venda venda = findByIdOrThrow(id);
         venda.setStatus(status);
         return repository.save(venda);

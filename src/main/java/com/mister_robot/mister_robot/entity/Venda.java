@@ -7,7 +7,6 @@ import java.util.List;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter @AllArgsConstructor @Entity @Table(name = "vendas")
@@ -20,12 +19,12 @@ public class Venda {
     @Column(nullable = false)
     private LocalDateTime data;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false)
     private double valorTotal;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private char status;
+    private StatusVenda status;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

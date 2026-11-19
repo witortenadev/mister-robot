@@ -51,7 +51,6 @@ public class JogoService {
 
     public Jogo save(Jogo jogo) {
         validate(jogo);
-        jogo.setId(null);
         return repository.save(jogo);
     }
 

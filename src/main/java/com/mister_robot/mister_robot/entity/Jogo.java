@@ -1,7 +1,5 @@
 package com.mister_robot.mister_robot.entity;
 
-import java.math.BigDecimal;
-
 import jakarta.persistence.*;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -35,6 +33,6 @@ public class Jogo {
 @Column(nullable = false)
     private int quantidadeEstoque;
 
-@Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal preco;
+@Column(nullable = false)
+    private double preco;
 }

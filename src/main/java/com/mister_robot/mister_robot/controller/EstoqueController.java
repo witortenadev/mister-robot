@@ -17,7 +17,7 @@ import com.mister_robot.mister_robot.JogoService;
 import com.mister_robot.mister_robot.entity.Jogo;
 
 @RestController
-@RequestMapping("/jogos")
+@RequestMapping("/estoque")
 public class EstoqueController {
 
     private final JogoService jogoService;
