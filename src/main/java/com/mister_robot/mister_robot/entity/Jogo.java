@@ -3,6 +3,10 @@ package com.mister_robot.mister_robot.entity;
 import java.math.BigDecimal;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,5 +37,4 @@ public class Jogo {
 
 @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal preco;
-   
 }
